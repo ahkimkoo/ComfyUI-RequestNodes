@@ -24,17 +24,15 @@ class AudioToBlobNode:
     CATEGORY = "RequestNode/Converters"
 
     def convert(self, audio):
-        waveform = audio["waveform"]  # [batch, samples, channels] or [batch, channels, samples]
+        waveform = audio["waveform"]  # [batch, channels, samples]
         sample_rate = audio["sample_rate"]
 
-        # Ensure shape is [channels, samples] for wavfile.write
+        # ComfyUI AUDIO format: [batch, channels, samples]
         w = waveform
         if w.dim() == 3:
-            w = w.squeeze(0)  # remove batch → [samples, channels] or [channels, samples]
-        # ComfyUI convention: [samples, channels]
-        if w.dim() == 2 and w.shape[0] < w.shape[1]:
-            # Likely [channels, samples], transpose to [samples, channels]
-            w = w.T
+            w = w.squeeze(0)  # [channels, samples]
+        # soundfile.write expects [samples, channels]
+        w = w.T  # [samples, channels]
 
         # Convert to int16 numpy
         w_np = w.cpu().float().numpy()

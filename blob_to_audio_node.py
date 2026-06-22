@@ -47,6 +47,8 @@ class BlobToAudioNode:
         else:
             audio_np = audio_np.reshape(-1, 1)
 
-        waveform = torch.from_numpy(audio_np).unsqueeze(0)  # [1, samples, channels]
+        # ComfyUI AUDIO format: [batch, channels, samples]
+        waveform = torch.from_numpy(audio_np)  # [samples, channels]
+        waveform = waveform.permute(1, 0).unsqueeze(0)  # [1, channels, samples]
         audio = {"waveform": waveform, "sample_rate": framerate}
         return (audio,)
